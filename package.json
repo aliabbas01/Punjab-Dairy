@@ -1,0 +1,7 @@
+{
+  "name":"punjab-dairy-offline","version":"1.0.0","private":true,
+  "description":"Punjab Dairy offline-first Android manager",
+  "scripts":{"android:init":"npx cap add android","android:sync":"npx cap sync android","android:open":"npx cap open android","android:build":"cd android && ./gradlew assembleDebug"},
+  "dependencies":{"@capacitor/core":"^7.4.0","@capacitor/android":"^7.4.0"},
+  "devDependencies":{"@capacitor/cli":"^7.4.0"}
+}
