@@ -1,31 +1,65 @@
+
 name: Build Android APK
+
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
+
 jobs:
   build:
+    name: Build Punjab Dairy APK
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '22' 
-      - uses: actions/setup-java@v4
+          node-version: '22'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '21'
-      - uses: android-actions/setup-android@v3
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+
+      - name: Verify project files
+        run: |
+          test -f package.json
+          test -f capacitor.config.json
+          test -f www/index.html
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+
       - name: Create native Android project
-        run: npx cap add android
+        run: |
+          if [ ! -d android ]; then
+            npx cap add android
+          fi
+
       - name: Sync web application
         run: npx cap sync android
+
       - name: Build debug APK
-        run: cd android && chmod +x gradlew && ./gradlew assembleDebug
-      - uses: actions/upload-artifact@v4
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload Punjab Dairy APK
+        uses: actions/upload-artifact@v4
         with:
           name: Punjab-Dairy-Android-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
           retention-days: 30
