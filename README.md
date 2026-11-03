@@ -40,3 +40,4 @@ Admin → **Backup & Settings** → **Export full JSON backup**. This file conta
 
 ## Suggested first test
 Create one customer and a supplier; add a supplier purchase and customer delivery; record a customer payment; check the resulting invoice and customer balance, then export and reimport the JSON backup on a fresh install.
+# Punjab-Dairy
