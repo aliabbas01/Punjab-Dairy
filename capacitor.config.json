@@ -1,1 +1,13 @@
-{"appId":"pk.punjabdairy.manager","appName":"Punjab Dairy","webDir":"www","bundledWebRuntime":false}
+{
+  "appId": "pk.punjabdairy.manager",
+  "appName": "Punjab Dairy",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": false,
+      "backgroundColor": "#A32129",
+      "style": "LIGHT"
+    }
+  }
+}
