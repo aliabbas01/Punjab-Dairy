@@ -78,3 +78,50 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   .invoice-greeting{font-size:15px}.invoice-party{grid-template-columns:1fr}.invoice-products th,.invoice-products td{font-size:11px;padding:9px 4px}
   .invoice-summary .invoice-due{font-size:15px}.invoice-stamp{top:86px;left:12px;font-size:16px;padding:7px 10px}
 }
+
+
+/* V9 — clean compact mobile app bar with back navigation below the tabs */
+.modern-header.top{
+  display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  flex-wrap:nowrap;gap:12px;min-height:78px;
+  padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;
+  background:linear-gradient(105deg,#871d28 0%,#aa2633 100%);
+  border-radius:0 0 18px 18px;
+  box-shadow:0 3px 12px rgba(71,13,25,.12);
+}
+.modern-header .brand{display:flex;align-items:center;flex:1 1 auto;gap:11px;min-width:0}
+.modern-header .logo{flex:none;width:48px;height:48px;border-radius:12px;background:#fff;overflow:hidden}
+.modern-header .brand-copy{min-width:0}
+.modern-header h1{font-size:20px;line-height:1.15;font-weight:800;margin:0;color:#fff;white-space:nowrap;letter-spacing:-.35px}
+.modern-header p{font-size:10.5px;line-height:1.25;white-space:nowrap;margin:4px 0 0;color:#f7dfe2;opacity:1;max-width:none}
+.modern-header .brand-dot{opacity:.65;margin:0 2px}
+.header-logout{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;
+  border:1px solid rgba(255,255,255,.38);border-radius:11px;background:rgba(255,255,255,.12);color:white;
+  min-height:38px;padding:7px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.header-logout:active{background:rgba(255,255,255,.23)}
+.nav{margin:0;padding:10px 10px 8px;gap:7px;box-shadow:none;background:#fbf7f6}
+.nav button{min-height:40px;padding:9px 4px;border-radius:10px;border:1px solid #eddcde;line-height:1.15;font-size:12px;background:#fff}
+.nav button.active{background:#9f2331;border-color:#9f2331;color:#fff;box-shadow:0 2px 7px rgba(159,35,49,.16)}
+.back-row{padding:2px 14px 4px;display:flex;align-items:center;justify-content:flex-start}
+.back-row .back-control{display:inline-flex;align-items:center;gap:5px;margin:0;padding:7px 10px;
+ min-height:34px;border:1px solid #e5dbdb;border-radius:9px;background:#fff;color:#842734;font-size:12px;font-weight:700;box-shadow:none}
+.back-row .back-control svg{flex:none}
+.back-row + .main{padding-top:0}
+@media(max-width:500px){
+ .modern-header.top{padding-left:12px;padding-right:12px;min-height:72px}
+ .modern-header .logo{width:40px;height:40px;border-radius:10px}
+ .modern-header .brand{gap:9px}
+ .modern-header h1{font-size:18px!important;white-space:nowrap}
+ .modern-header p{font-size:9px!important;max-width:none!important;white-space:nowrap}
+ .header-logout{min-height:34px;padding:7px 9px;font-size:11px}
+ .header-logout svg{width:16px;height:16px}
+ .nav{padding:9px 8px 7px;gap:6px}
+ .nav button{font-size:11px;min-height:41px;padding:8px 2px}
+ .back-row{padding:0 12px 5px}
+}
+@media(max-width:355px){
+ .modern-header h1{font-size:16px!important}
+ .modern-header p{font-size:8px!important}
+ .header-logout span{display:none}
+ .header-logout{width:36px;padding:6px}
+}
