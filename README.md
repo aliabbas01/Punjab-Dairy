@@ -38,3 +38,12 @@ An Android update requires **the same application ID and signing certificate** a
 - Server-side pagination / remote database: not possible in the current offline-only architecture, though UI lists are paginated for lower rendering cost.
 - Native one-click PDF export: invoice can be shared as HTML and printed/saved as PDF where Android supports printing. A dedicated native PDF engine is a later task.
 - True server-side account access: customer credentials and profile limits apply on-device, not across devices.
+
+
+## V5 targeted fixes
+- Entries screen has **three independent tables** (home delivery, supplier purchases, shop sales) with independent pagination; shared date filter defaults to today.
+- Bills: fixed the missing `id` attributes on account and date selectors that caused the false “Select an account and dates” validation error; button is now “Generate Bill”.
+- Payments: separate **Customer payments received** and **Supplier payments paid** tabs with independent paginated records.
+- No database schema, database name, application ID, or import/export format changed. In-place installation still requires matching Android signing key. Make a verified backup before upgrading.
+
+- Browser PWA service-worker cache bumped to v5 so existing browser installations receive new app assets. The Android build does not register this service worker.
