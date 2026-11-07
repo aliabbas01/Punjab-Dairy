@@ -26,7 +26,7 @@ const within=(d,a,b)=>dateOnly(d)>=a&&dateOnly(d)<=b;
 function dates(period,anchor=today()){let d=new Date(anchor+'T12:00:00'), first=new Date(d);if(period==='day'){}else if(period==='week'){first.setDate(d.getDate()-(d.getDay()+6)%7)}else if(period==='month'){first.setDate(1)}else if(period==='quarter'){first.setMonth(Math.floor(d.getMonth()/3)*3,1)}else if(period==='year'){first.setMonth(0,1)}let format=x=>[x.getFullYear(),String(x.getMonth()+1).padStart(2,'0'),String(x.getDate()).padStart(2,'0')].join('-');return [format(first),format(d)]}
 function stats(period='day',anchor=today()){let[a,b]=dates(period,anchor), e=list('entries').filter(x=>within(x.date,a,b)),costs=list('expenses').filter(x=>within(x.date,a,b)),shop=e.filter(x=>x.type==='shop'),delivery=e.filter(x=>x.type==='delivery'),buy=e.filter(x=>x.type==='purchase');let staffCost=list('staff').filter(x=>x.active!==false).reduce((s,x)=>s+n(x.salary),0)*({day:1/30,week:7/30,month:1,quarter:3,year:12}[period]);let revenue=total([...shop,...delivery]),purchase=total(buy),expense=costs.reduce((s,x)=>s+n(x.amount),0);return {shop:total(shop),delivery:total(delivery),purchase,revenue,expense,staffCost,profit:revenue-purchase-expense-staffCost,shopQty:shop.reduce((s,x)=>s+qty(x),0),deliveryQty:delivery.reduce((s,x)=>s+qty(x),0),purchaseQty:buy.reduce((s,x)=>s+qty(x),0)}}
 const button=(label,act='')=>`<button class="btn ${act==='cancel'?'secondary':''}" type="button" data-action="${esc(act)}">${label}</button>`;
-function layout(body){let isAdmin=session?.role==='admin', tabs=isAdmin?[['dashboard','Home'],['entries','Entries'],['customers','Customers'],['suppliers','Suppliers'],['payments','Payments'],['invoices','Bills'],['more','More']]:[['dashboard','Home'],['invoices','My Bills'],['profile','Profile'],['feedback','Feedback']];app.innerHTML=`<div class="shell"><header class="top"><div class="brand"><div class="logo"><img src="logo.png" alt="Punjab Dairy logo"></div><div><h1>Punjab Dairy</h1><p>Fresh milk • Smart management • Offline</p></div></div><button class="btn secondary sm" data-action="logout">Log out</button></header><nav class="nav">${tabs.map(([k,v])=>`<button data-view="${k}" class="${view===k?'active':''}">${v}</button>`).join('')}</nav><main class="main">${(editor||view!=='dashboard')?`<button class="back-control" type="button" data-action="go-back" aria-label="Go back">‹ Back</button>`:''}${flash?`<div class="alert success">${esc(flash)}</div>`:''}${body}</main><div class="footer">Offline records • Back up regularly</div></div>`;flash=''}
+function layout(body){let isAdmin=session?.role==='admin', tabs=isAdmin?[['dashboard','Home'],['entries','Entries'],['customers','Customers'],['suppliers','Suppliers'],['payments','Payments'],['invoices','Bills'],['more','More']]:[['dashboard','Home'],['invoices','My Bills'],['profile','Profile'],['feedback','Feedback']];let showBack=(editor||view!=='dashboard');app.innerHTML=`<div class="shell"><header class="top"><div class="brand"><div class="logo"><img src="logo.png" alt="Punjab Dairy logo"></div><div><h1>Punjab Dairy</h1><p>Fresh milk • Smart management • Offline</p></div></div><div class="top-actions">${showBack?`<button class="btn secondary sm" data-action="go-back" aria-label="Go back">← Back</button>`:''}<button class="btn secondary sm" data-action="logout">Log out</button></div></header><nav class="nav">${tabs.map(([k,v])=>`<button data-view="${k}" class="${view===k?'active':''}">${v}</button>`).join('')}</nav><main class="main">${flash?`<div class="alert success">${esc(flash)}</div>`:''}${body}</main><div class="footer">Offline records • Back up regularly</div></div>`;flash=''}
 function title(t,sub='',extra=''){return `<div class="heading"><div><h2>${t}</h2>${sub?`<span class="muted">${sub}</span>`:''}</div>${extra}</div>`}
 const stat=(label,value,hint='')=>`<div class="stat"><small>${label}</small><strong>${value}</strong><em>${hint}</em></div>`;
 const action=(label,a,id='',cls='secondary')=>`<button class="btn ${cls} sm" data-action="${a}" data-id="${esc(id)}">${label}</button>`;
@@ -131,7 +131,10 @@ function morePage(){layout(`${title('More tools','Administration and business se
 function invoicesPage(){activeInvoice=null;let isAdmin=session.role==='admin';if(!isAdmin){let c=find('customers',session.customerId);return invoicePanel('customer',c?.id)}let opts=[...list('customers').map(p=>({id:p.id,name:p.name,type:'customer'})),...list('suppliers').map(p=>({id:p.id,name:p.name,type:'supplier'}))];layout(`${title('Bills & statements','Urdu invoice • customer and supplier statements')}<div class="panel"><div class="formgrid">${select('invoiceParty','Account',opts.map(p=>[p.type+':'+p.id,(p.type==='customer'?'Customer: ':'Supplier: ')+p.name]),opts[0]?opts[0].type+':'+opts[0].id:'')}${input('invoiceFrom','From date',dates('month')[0],'date')}${input('invoiceTo','To date',today(),'date')}${input('invoiceAdjustment','Additional unrecorded outstanding (PKR)',0,'number','step="0.01" min="0"')}<p class="note full">Only enter an amount not already included in previous balances. This is an invoice-only adjustment; it does not change ledger records.</p><div class="field"><label> </label>${button('Generate Bill','generate-invoice')}</div></div><div id="invoicearea"></div></div>`)}
 function invoicePanel(type,id){let d=dates('month');layout(`${title('My invoices','Monthly and previous statements')}<div class="panel"><div class="toolrow">${input('invoiceFrom','From',d[0],'date')}${input('invoiceTo','To',today(),'date')}${button('Generate Bill','generate-invoice')}</div><input type="hidden" id="invoiceParty" value="${type}:${esc(id)}"><div id="invoicearea"></div></div>`);generateInvoice()}
 function generateInvoice(){let val=($('#invoiceParty')||$('[name="invoiceParty"]'))?.value||'', [type,id]=val.split(':'),from=($('#invoiceFrom')||$('[name="invoiceFrom"]'))?.value,to=($('#invoiceTo')||$('[name="invoiceTo"]'))?.value;if(!id||!from||!to)return alert('Select an account and dates');if(from>to)return alert('From date must be before To date');if(session.role!=='admin'&&(type!=='customer'||id!==session.customerId))return alert('Access denied');let p=find(type==='customer'?'customers':'suppliers',id);if(!p)return alert('Account not found');let entries=list('entries').filter(e=>e.partyId===id&&e.type===(type==='customer'?'delivery':'purchase')&&within(e.date,from,to)).sort((a,b)=>a.date.localeCompare(b.date));let payments=list('payments').filter(x=>x.partyId===id&&x.partyType===type&&within(x.date,from,to));let before=total(list('entries').filter(e=>e.partyId===id&&e.type===(type==='customer'?'delivery':'purchase')&&dateOnly(e.date)<from))-list('payments').filter(x=>x.partyId===id&&x.partyType===type&&dateOnly(x.date)<from).reduce((s,x)=>s+n(x.amount),0),bill=total(entries),paid=payments.reduce((s,x)=>s+n(x.amount),0),adjustment=session.role==='admin'?Math.max(0,n($('#invoiceAdjustment')?.value)):0,balance=before+bill-paid+adjustment;let cow=entries.reduce((s,e)=>s+n(e.cowQty),0),buffalo=entries.reduce((s,e)=>s+n(e.buffaloQty),0),yogurt=entries.reduce((s,e)=>s+n(e.yogurtQty),0);let product=(label,quantity,unit,rate,totalAmount)=>`<tr><td>${esc(label)}</td><td>${quantity.toFixed(2)} ${unit}</td><td>${rate}</td><td>${money(totalAmount)}</td></tr>`;let productRows=[['گائے کا دودھ',cow,'لیٹر','cowRate','cowQty'],['بھینس کا دودھ',buffalo,'لیٹر','buffaloRate','buffaloQty'],['دہی',yogurt,'کلو','yogurtRate','yogurtQty']].map(([label,q,u,r,k])=>product(label,q,u,entries.length&&entries.every(e=>n(e[k])===0||n(e[r])===n(entries.find(x=>n(x[k])>0)?.[r]))?money(entries.find(e=>n(e[k])>0)?.[r]||0):'مختلف',entries.reduce((s,e)=>s+n(e[k])*n(e[r]),0))).join('');
- let invoice=`<article class="urdu-invoice" id="printinvoice"><header class="invoice-head"><img src="${invoiceLogo}" alt="Punjab Dairy"><div><h2 lang="ur" dir="rtl">پنجاب ڈیری</h2><b>PUNJAB DAIRY • FRESH & PURE</b><p lang="ur" dir="rtl">خالص دودھ، صحت مند زندگی</p></div></header><div class="invoice-greeting" lang="ur" dir="rtl">السلام علیکم! ہمارے ساتھ تعاون کا شکریہ۔</div><div class="invoice-party"><div><small lang="ur">${type==='customer'?'کسٹمر کا نام':'سپلائر کا نام'}</small><strong>${esc(p.name)}</strong><span>${esc(p.phone||'')} • ${esc(p.address||'')}</span></div><div dir="rtl"><small>بل کی تفصیلات</small><strong>${esc(from)} تا ${esc(to)}</strong><span>${type==='customer'?'ماہانہ بل':'سپلائر ادائیگی کی تفصیل'}</span></div></div><div class="invoice-table-wrap"><table class="invoice-products" dir="rtl"><thead><tr><th>تفصیل</th><th>مقدار</th><th>فی لیٹر / کلو</th><th>کل رقم</th></tr></thead><tbody>${productRows}</tbody></table></div><div class="invoice-summary" dir="rtl"><div><span>پچھلا بقایا</span><b>${money(before)}</b></div>${adjustment?`<div><span>اضافی سابقہ بقایا</span><b>${money(adjustment)}</b></div>`:''}<div><span>اس مدت کا بل</span><b>${money(bill)}</b></div><div><span>وصول / ادا شدہ رقم</span><b>${money(paid)}</b></div><div class="invoice-due"><span>${type==='customer'?'قابلِ ادا رقم':'سپلائر کو قابلِ ادا رقم'}</span><strong>${money(balance)}</strong></div></div><section class="invoice-payment-box"><h3>Payment details • ادائیگی کی تفصیلات</h3><div><b>Easypaisa</b><span>03239119837 · Ali Abbas</span></div><div><b>HBL Bank</b><span>13537902119103 · Ali Abbas</span></div></section><div class="invoice-footer" lang="ur" dir="rtl">شکریہ! پنجاب ڈیری • Fresh & Pure</div><p class="invoice-small">Generated ${esc(today())} • ${type==='customer'?'Customer invoice':'Supplier statement'} • Amounts in PKR. Negative closing balance indicates advance payment.</p></article>`;
+ let invoiceHead=type==='customer'?'کسٹمر بل':'سپلائر ادائیگی رسید';
+ let paymentBox=type==='customer'?`<section class="invoice-payment-box"><h3>Payment details • ادائیگی کی تفصیلات</h3><div><b>Easypaisa</b><span>03239119837 · Ali Abbas</span></div><div><b>HBL Bank</b><span>13537902119103 · Ali Abbas</span></div></section>`:'';
+ let supplierStamp=type==='supplier'&&paid>0?`<div class="invoice-stamp">ادا شدہ / PAID</div>`:'';
+ let invoice=`<article class="urdu-invoice ${type==='customer'?'compact-customer':''}" id="printinvoice">${supplierStamp}<header class="invoice-head"><img src="${invoiceLogo}" alt="Punjab Dairy"><div><h2 lang="ur" dir="rtl">پنجاب ڈیری</h2><b>PUNJAB DAIRY • FRESH & PURE</b><p lang="ur" dir="rtl">خالص دودھ، صحت مند زندگی</p></div></header><div class="invoice-greeting" lang="ur" dir="rtl">${type==='customer'?'السلام علیکم! ہمارے بل کی تفصیلات ملاحظہ فرمائیں۔':'السلام علیکم! یہ سپلائر ادائیگی رسید / اسٹیٹمنٹ ہے۔'}</div><div class="invoice-party"><div><small lang="ur">${type==='customer'?'کسٹمر کا نام':'سپلائر کا نام'}</small><strong>${esc(p.name)}</strong><span>${esc(p.phone||'')} • ${esc(p.address||'')}</span></div><div dir="rtl"><small>بل کی تفصیلات</small><strong>${esc(from)} تا ${esc(to)}</strong><span>${invoiceHead}</span></div></div><div class="invoice-table-wrap"><table class="invoice-products" dir="rtl"><thead><tr><th>تفصیل</th><th>مقدار</th><th>فی لیٹر / کلو</th><th>کل رقم</th></tr></thead><tbody>${productRows}</tbody></table></div><div class="invoice-summary" dir="rtl"><div><span>پچھلا بقایا</span><b>${money(before)}</b></div>${adjustment?`<div><span>اضافی سابقہ بقایا</span><b>${money(adjustment)}</b></div>`:''}<div><span>اس مدت کا بل</span><b>${money(bill)}</b></div><div><span>${type==='customer'?'وصول شدہ رقم':'ادا شدہ رقم'}</span><b>${money(paid)}</b></div><div class="invoice-due"><span>${type==='customer'?'کل واجب الادا رقم':'بقیہ قابلِ ادائیگی'}</span><strong>${money(balance)}</strong></div></div>${paymentBox}<div class="invoice-footer" lang="ur" dir="rtl">شکریہ! پنجاب ڈیری • Fresh & Pure</div><p class="invoice-small">Generated ${esc(today())} • ${type==='customer'?'Customer invoice':'Supplier payment receipt'} • Amounts in PKR.</p></article>`;
  $('#invoicearea').innerHTML=invoice+`<div class="actions no-print" style="margin-top:14px">${button('Download / share PNG','share-invoice')}${button('Download / share PDF','print-invoice')}${button('Export statement CSV','invoice-csv')}</div>`;activeInvoice={type,id,from,to,entries,payments,balance,bill,paid,before,adjustment,customer:p,html:invoice}}
 
 function profile(){let c=find('customers',session.customerId);layout(`${title('My profile')}<div class="panel"><h3>${esc(c?.name)}</h3><p>Phone: ${esc(c?.phone)}<br>Address: ${esc(c?.address)}<br>Registered: ${esc(c?.registered)}<br>Cow rate: ${money(c?.cowRate)} / L<br>Buffalo rate: ${money(c?.buffaloRate)} / L<br>Yogurt rate: ${money(c?.yogurtRate)} / kg</p><p class="muted">To update your personal details or reset your password, contact Punjab Dairy admin.</p></div>`)}
@@ -172,99 +175,49 @@ function change(e){if(e.target.matches('#profitmonth')){selectedProfitMonth=e.ta
 
 // Offline invoice output: render directly to a canvas, without CDN or printing dependencies.
 async function invoiceCanvas(info){
- const width=1080, height=1740, c=document.createElement('canvas');
- c.width=width; c.height=height;
- const ctx=c.getContext('2d'); if(!ctx)throw Error('This device cannot render invoice images');
- const green='#0a5b2a', dark='#183322', mid='#4b6b58', lite='#f3faf4', line='#d7e7d8';
- const rounded=(x,y,w,h,r,color,stroke=null,lw=0)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(color){ctx.fillStyle=color;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||2;ctx.stroke();}};
- const rect=(x,y,w,h,color)=>{ctx.fillStyle=color;ctx.fillRect(x,y,w,h)};
- const text=(str,x,y,size=28,color=dark,bold=false,align='left')=>{ctx.fillStyle=color;ctx.font=(bold?'700 ':'400 ')+size+"px system-ui, sans-serif";ctx.textAlign=align;ctx.direction='ltr';ctx.fillText(String(str??''),x,y);ctx.textAlign='left';};
- const ru=(str,x,y,size=29,color=green,bold=true,align='right')=>{ctx.fillStyle=color;ctx.font=(bold?'700 ':'500 ')+size+"px 'Noto Naskh Arabic','Noto Nastaliq Urdu','Segoe UI',sans-serif";ctx.direction='rtl';ctx.textAlign=align;ctx.fillText(String(str??''),x,y);ctx.direction='ltr';ctx.textAlign='left';};
- const drawRule=(y)=>{ctx.strokeStyle=line;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(46,y);ctx.lineTo(width-46,y);ctx.stroke();};
- const moneyCell=v=>money(v);
- const fmtDate=d=>dateOnly(d||today());
  const isSupplier=info.type==='supplier';
- const party=info.customer||{};
+ const payCount=(info.payments||[]).length;
+ const width=1080, height=isSupplier?Math.max(1620,1480+Math.min(payCount,5)*55):1520;
+ const c=document.createElement('canvas'); c.width=width; c.height=height;
+ const ctx=c.getContext('2d'); if(!ctx)throw Error('This device cannot render invoice images');
+ const green='#0a5b2a', dark='#173421', mid='#5b7561', lite='#f5faf6', line='#d7e6d9', red='#c62828';
+ const rounded=(x,y,w,h,r,fill,stroke=null,lw=2)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath(); if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke();}};
+ const text=(s,x,y,size=28,color=dark,bold=false,align='left')=>{ctx.fillStyle=color;ctx.font=(bold?'700 ':'400 ')+size+"px system-ui, sans-serif";ctx.textAlign=align;ctx.direction='ltr';ctx.fillText(String(s??''),x,y); ctx.textAlign='left';};
+ const ru=(s,x,y,size=28,color=green,bold=true)=>{ctx.fillStyle=color;ctx.font=(bold?'700 ':'500 ')+size+"px 'Noto Naskh Arabic','Noto Nastaliq Urdu','Segoe UI',sans-serif";ctx.textAlign='right';ctx.direction='rtl';ctx.fillText(String(s??''),x,y);ctx.direction='ltr';ctx.textAlign='left';};
+ const moneyVal=v=>money(v);
+ const dOnly=d=>dateOnly(d||today());
  const rows=[
-  {en:'Cow Milk', ur:'گائے کا دودھ', q:'cowQty', r:'cowRate', unit:'L'},
-  {en:'Buffalo Milk', ur:'بھینس کا دودھ', q:'buffaloQty', r:'buffaloRate', unit:'L'},
-  {en:'Yogurt', ur:'دہی', q:'yogurtQty', r:'yogurtRate', unit:'Kg'}
- ];
- const rowData=rows.map(row=>{
-  const quantity=(info.entries||[]).reduce((a,x)=>a+n(x[row.q]),0);
-  const value=(info.entries||[]).reduce((a,x)=>a+n(x[row.q])*n(x[row.r]),0);
-  const rates=[...new Set((info.entries||[]).filter(e=>n(e[row.q])>0).map(e=>n(e[row.r]).toFixed(2)))];
-  const rate=rates.length===1?money(Number(rates[0])):rates.length?'مختلف':'—';
-  return {...row, quantity, value, rate};
- });
+  {ur:'گائے کا دودھ', q:'cowQty', r:'cowRate', unit:'لیٹر'},
+  {ur:'بھینس کا دودھ', q:'buffaloQty', r:'buffaloRate', unit:'لیٹر'},
+  {ur:'دہی', q:'yogurtQty', r:'yogurtRate', unit:'کلو'}
+ ].map(r=>{const qty=(info.entries||[]).reduce((a,e)=>a+n(e[r.q]),0); const amtV=(info.entries||[]).reduce((a,e)=>a+n(e[r.q])*n(e[r.r]),0); const rates=[...new Set((info.entries||[]).filter(e=>n(e[r.q])>0).map(e=>n(e[r.r]).toFixed(2)))]; return {...r, qty, amtV, rate: rates.length===1?money(Number(rates[0])):rates.length?'مختلف':'—'};});
  ctx.fillStyle='#fff'; ctx.fillRect(0,0,width,height); rounded(14,14,width-28,height-28,26,'#fff',green,6);
- rounded(30,30,width-60,188,26,lite);
- try{const logo=new Image();logo.src='logo.png';await logo.decode();ctx.drawImage(logo,48,48,160,160)}catch(e){}
- text('PUNJAB DAIRY',238,103,54,green,true); text('FRESH & PURE',242,148,26,mid,true);
- ru('پنجاب ڈیری',1016,102,64,green,true);
- rounded(560,122,438,54,27,green); ru('خاص دودھ، صحت مند زندگی',965,158,29,'#fff',true);
- drawRule(240);
- ru('السلام علیکم!',620,300,34,green,true,'center');
- ru(isSupplier?'سپلائر کی خریداری اور ادائیگی کی تفصیل پیش خدمت ہے۔':'ہمارے مہینے کے بل کی تفصیلات پیش خدمت ہیں۔',1008,362,33,dark,true);
- ru('شکریہ!',650,430,36,green,true,'center');
- rounded(34,492,352,190,22,'#fff',green,3);
- rounded(34,462,352,70,20,green);
- ru(isSupplier?'سپلائر کا نام:':'کسٹمر کا نام:',357,507,31,'#fff',true);
- text(party.name||'—',122,605,31,dark,true); text('●',72,606,44,green,true); if(party.phone) text(party.phone,72,648,24,mid,false);
- rounded(420,464,625,218,26,'#fff',green,3);
- rounded(480,444,218,58,18,green);
- ru(isSupplier?'بل کی تفصیلات':'بل کی تفصیلات',673,484,28,'#fff',true,'center');
- const periodY=565;
- ru('مدت:',1000,555,32,dark,true); text(fmtDate(info.from),760,555,28,dark,true,'center'); ru('سے',695,555,28,dark,true,'center'); text(fmtDate(info.to),540,555,28,'#cc2323',true,'center');
- ru('رابطہ نمبر:',1000,612,28,mid,true); text(party.phone||'—',750,612,26,dark,false,'center');
- if(isSupplier){ru('سپلائر اسٹیٹمنٹ',1000,660,26,green,true);}
- else{ru('جمع کرانے کی آخری تاریخ:',1000,660,26,green,true); text(fmtDate(info.dueDate||new Date(Date.parse(info.to||today())+86400000).toISOString().slice(0,10)),720,660,28,'#cc2323',true,'center');}
- const tableTop=740;
- rounded(32,tableTop,width-64,525,24,'#fff',green,3);
- rounded(48,tableTop-16,250,58,18,green); ru('بل کی تفصیلات',270,tableTop+22,30,'#fff',true,'center');
- rect(52,tableTop+60,976,76,green);
- ru('تفصیل',960,tableTop+108,30,'#fff',true); ru('مقدار',675,tableTop+108,30,'#fff',true); ru('فی کلو / لیٹر',460,tableTop+108,28,'#fff',true); ru('کل رقم',196,tableTop+108,30,'#fff',true);
- let y=tableTop+186;
- rowData.forEach((row,idx)=>{
-   if(idx%2===0)rect(52,y-50,976,88,'#f7fbf7');
-   ru(row.ur,972,y,31,dark,true);
-   text((row.quantity?row.quantity.toFixed(2):'0')+' '+row.unit,640,y,27,dark,true,'center');
-   text(String(row.rate),438,y,26,dark,false,'center');
-   text(moneyCell(row.value),196,y,31,dark,true,'center');
-   ctx.strokeStyle=line; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(52,y+38); ctx.lineTo(1028,y+38); ctx.stroke();
-   y+=88;
- });
- const sumLabelSize=30;
- let sy=tableTop+362;
- const renderSummary=(labelUr,val,highlight=false)=>{
-   rounded(52,sy-40,976,68,16,highlight?green:'#f8fbf8',highlight?green:line,highlight?0:2);
-   ru(labelUr,972,sy+4,30,highlight?'#fff':dark,true);
-   text(moneyCell(val),230,sy+2,36,highlight?'#fff':green,true,'center');
-   sy+=80;
- };
- renderSummary('سابقہ بقایا',info.before||0,false);
- renderSummary('موجودہ بل',info.bill||0,false);
- if(info.adjustment)renderSummary('اضافی بقایا',info.adjustment||0,false);
- renderSummary(isSupplier?'ادا شدہ رقم':'وصول شدہ رقم',-(info.paid||0),false);
- renderSummary(isSupplier?'کل واجب الادا رقم':'کل رقم',info.balance||0,true);
- let infoY=1305;
- if(isSupplier){
-   rounded(32,1288,width-64,330,24,'#fff',green,3);
-   rounded(54,1268,328,58,18,green); ru('ادائیگی کی ریکارڈ تفصیل',346,1308,29,'#fff',true,'center');
-   let py=1368; const payments=(info.payments||[]).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,6);
-   if(payments.length){
-     payments.forEach((p,idx)=>{if(idx%2===0)rect(54,py-34,972,46,'#f6faf7'); text(fmtDate(p.date),100,py,22,mid,false); ru('ادا شدہ',775,py,24,dark,true); text(moneyCell(p.amount),948,py,25,green,true,'right'); py+=42;});
-     infoY=Math.max(infoY,py+18);
-   }else{ru('منتخب مدت میں کوئی ادائیگی ریکارڈ نہیں ہوئی۔',980,1378,28,mid,true); infoY=1428;}
- }else{
-   rounded(32,1288,width-64,330,24,'#fff',green,3);
-   rounded(54,1268,260,58,18,green); ru('ادائیگی کی تفصیل',280,1308,29,'#fff',true,'center');
-   text('EASYPAISA',370,1392,40,green,true); text('03239119837',370,1442,38,dark,true); text('Name: Ali Abbas',370,1490,30,dark,true);
-   text('HBL BANK',690,1392,40,'#18a6b6',true); text('13537902119103',690,1442,38,dark,true); text('A/C Title: Ali Abbas',690,1490,30,dark,true);
-   ru('براہِ مہربانی ادائیگی کے بعد اس بل کی تصویر واٹس ایپ پر ارسال کریں۔',970,1562,25,mid,true);
-   infoY=1600;
+ rounded(28,28,width-56,170,24,lite); try{const logo=new Image(); logo.src='logo.png'; await logo.decode(); ctx.drawImage(logo,46,44,140,140);}catch(e){}
+ text('PUNJAB DAIRY',214,95,52,green,true); text('FRESH & PURE',218,136,24,mid,true); ru('پنجاب ڈیری',1005,98,60,green,true); rounded(640,120,340,44,22,green); ru('خاص دودھ، صحت مند زندگی',962,151,23,'#fff',true);
+ ctx.strokeStyle=line; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(38,220); ctx.lineTo(width-38,220); ctx.stroke();
+ ru(isSupplier?'سپلائر ادائیگی رسید':'کسٹمر بل',1000,272,44,green,true);
+ ru(isSupplier?'یہ رسید سپلائر کو کی گئی ادائیگی اور بقایا رقم کی تفصیل ہے۔':'ہمارے ماہانہ بل کی تفصیلات ملاحظہ فرمائیں۔',1000,322,26,dark,true);
+ rounded(38,366,330,156,20,'#fff',green,3); rounded(38,340,330,56,18,green); ru(isSupplier?'سپلائر کا نام':'کسٹمر کا نام',344,376,25,'#fff',true); text((info.customer?.name)||'—',92,449,30,dark,true); if(info.customer?.phone) text(info.customer.phone,92,486,22,mid,false);
+ rounded(394,340,648,182,20,'#fff',green,3); rounded(470,318,210,50,18,green); ru('بل کی تفصیل',658,351,24,'#fff',true);
+ ru('مدت:',994,402,28,dark,true); text(dOnly(info.to),720,402,25,red,true,'center'); ru('سے',652,402,24,dark,true); text(dOnly(info.from),540,402,25,dark,true,'center');
+ if(isSupplier){ru('یہ بیان ادائیگی کے ثبوت کے طور پر استعمال کیا جا سکتا ہے۔',996,452,22,mid,true);} else {ru('جمع کرانے کی تاریخ:',994,452,24,green,true); text(dOnly(info.dueDate||new Date(Date.parse(info.to||today())+86400000).toISOString().slice(0,10)),695,452,24,red,true,'center');}
+ const tableY=560; rounded(38,tableY,width-76,336,22,'#fff',green,3); ctx.fillStyle=green; ctx.fillRect(54,tableY+18,972,62); ru('تفصیل',973,tableY+58,28,'#fff',true); ru('مقدار',720,tableY+58,28,'#fff',true); ru('ریٹ',498,tableY+58,28,'#fff',true); ru('کل رقم',220,tableY+58,28,'#fff',true);
+ let y=tableY+136; rows.forEach((r,i)=>{ if(i%2===0){ctx.fillStyle='#f8fbf8'; ctx.fillRect(54,y-42,972,74);} ru(r.ur,974,y,28,dark,true); text((r.qty||0).toFixed(2)+' '+r.unit,718,y,24,dark,true,'center'); text(String(r.rate),495,y,23,dark,false,'center'); text(moneyVal(r.amtV),220,y,28,dark,true,'center'); ctx.strokeStyle=line; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(54,y+28); ctx.lineTo(1026,y+28); ctx.stroke(); y+=74; });
+ const boxY=924; rounded(38,boxY,width-76,isSupplier?308:298,22,'#fff',green,3);
+ let sy=boxY+52; const sum=(label,val,highlight=false)=>{ rounded(58,sy-30,932,52,14,highlight?green:'#f8fbf8',highlight?green:line,highlight?0:1.5); ru(label,960,sy+2,25,highlight?'#fff':dark,true); text(moneyVal(val),222,sy+2,31,highlight?'#fff':green,true,'center'); sy+=64; };
+ sum('پچھلا بقایا',info.before||0,false); sum('اس مدت کا بل',info.bill||0,false); if(info.adjustment) sum('اضافی بقایا',info.adjustment||0,false); sum(isSupplier?'ادا شدہ رقم':'وصول شدہ رقم',-(info.paid||0),false); sum(isSupplier?'بقیہ قابلِ ادائیگی':'کل واجب الادا رقم',info.balance||0,true);
+ if(isSupplier && (info.paid>0 || info.balance<=0)){
+   ctx.save(); ctx.translate(835,boxY+245); ctx.rotate(-0.27); rounded(-120,-44,240,88,16,'rgba(10,91,42,0.08)','rgba(10,91,42,0.55)',4); ru('ادا شدہ',92,-4,34,green,true); text('PAID',0,30,26,green,true,'center'); ctx.restore();
  }
- rounded(28,1652,width-56,56,0,green); text('Punjab Dairy • Fresh & Pure',540,1688,24,'#fff',true,'center');
+ let sectionY=isSupplier?1282:1242;
+ if(isSupplier){
+   rounded(38,sectionY,width-76,Math.max(190,92+Math.min(payCount,6)*44),22,'#fff',green,3); rounded(58,sectionY-18,280,50,16,green); ru('ادائیگی ریکارڈ',320,sectionY+14,24,'#fff',true); let py=sectionY+72; const pays=(info.payments||[]).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,6); if(pays.length){pays.forEach((p,i)=>{if(i%2===0){ctx.fillStyle='#f7fbf8'; ctx.fillRect(58,py-28,952,36);} text(dOnly(p.date),92,py,21,mid,false); ru('ادا شدہ',770,py,22,dark,true); text(moneyVal(p.amount),970,py,24,green,true,'right'); py+=42;}); sectionY=py+20;} else {ru('منتخب مدت میں کوئی ادائیگی ریکارڈ نہیں ہوئی۔',980,sectionY+86,24,mid,true); sectionY=sectionY+126;}
+   ru('یہ رسید واٹس ایپ پر بھیجی جا سکتی ہے۔',980,sectionY+16,22,mid,true);
+ } else {
+   rounded(38,sectionY,width-76,220,22,'#fff',green,3); rounded(58,sectionY-18,320,50,16,green); ru('ادائیگی کی تفصیل',354,sectionY+14,24,'#fff',true); text('EASYPAISA',110,sectionY+88,28,green,true); text('03239119837',110,sectionY+126,30,dark,true); text('Name: Ali Abbas',110,sectionY+158,22,dark,true); text('HBL BANK',590,sectionY+88,28,'#18a6b6',true); text('13537902119103',590,sectionY+126,30,dark,true); text('A/C Title: Ali Abbas',590,sectionY+158,22,dark,true); ru('ادائیگی کے بعد بل کی تصویر واٹس ایپ پر بھیج دیں۔',968,sectionY+198,21,mid,true);
+   sectionY += 248;
+ }
+ rounded(30,height-64,width-60,40,0,green); text('Punjab Dairy • Fresh & Pure',540,height-37,20,'#fff',true,'center');
  return c;
 }
 

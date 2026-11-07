@@ -46,3 +46,35 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .accounting-grid{display:grid;grid-template-columns:1fr;gap:0;border:1px solid #cfe3d3;border-radius:12px;overflow:hidden}.accounting-grid>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-bottom:1px solid #e1eee4;font-size:13px}.accounting-grid b{white-space:nowrap;color:#07552d}.accounting-grid>.accounting-final{background:#e3f4e7;font-size:15px;font-weight:800;border-bottom:0}
 .invoice-payment-box{margin:16px 0;padding:15px;border:1px solid #b6d9c2;background:#f5faf6;border-radius:12px}.invoice-payment-box h3{font-size:15px;color:#07522a;margin:0 0 8px}.invoice-payment-box>div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid #dae9dc;font-size:12px}.invoice-payment-box span{text-align:right}
 @media(max-width:480px){.entry-tabs{gap:5px}.entry-tab{font-size:11px;padding:9px 3px;min-height:58px}.monthly-report{padding:12px}.profit-point{width:4.2%}.invoice-payment-box{padding:9px}.invoice-payment-box>div{flex-direction:column;gap:2px}}
+
+/* V8: compact dashboard cards, top bar back button, improved invoice preview */
+.top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.main .back-control{display:none}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px}
+.stat{padding:12px 10px;border-radius:14px}
+.stat small{font-size:11px;line-height:1.2;display:block;min-height:28px}
+.stat strong{font-size:21px;line-height:1.05;display:block;margin-top:4px}
+.stat em{font-size:10px;line-height:1.25;display:block;margin-top:5px;color:#658071}
+.feature-stat{grid-column:span 2}.feature-stat strong{font-size:24px}
+.quick .btn,.actions .btn{white-space:nowrap}
+.duelist div{padding:10px 12px;font-size:13px}.duelist b{font-size:14px}
+.urdu-invoice{position:relative;border-width:2px;padding:18px 18px 14px;overflow:hidden}
+.urdu-invoice.compact-customer{max-width:760px}
+.invoice-head{padding-bottom:12px;border-bottom-width:6px}.invoice-head img{width:92px;height:92px}.invoice-head h2{font-size:36px;line-height:1.35}.invoice-head p{font-size:18px}
+.invoice-greeting{font-size:18px;padding:10px 0 8px}.invoice-party strong{font-size:18px}.invoice-products th,.invoice-products td{padding:12px 8px;font-size:14px}
+.invoice-summary>div{padding:10px 14px}.invoice-summary .invoice-due{font-size:18px}
+.invoice-payment-box h3{font-size:14px}.invoice-payment-box>div{font-size:12px}
+.invoice-stamp{position:absolute;top:108px;left:22px;transform:rotate(-18deg);border:3px solid rgba(10,91,42,.55);color:#0a5b2a;background:rgba(10,91,42,.05);border-radius:16px;padding:10px 18px;font-weight:800;font-size:22px;z-index:2}
+@media(max-width:560px){
+  .top-actions{width:100%;justify-content:space-between}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .feature-stat{grid-column:1/-1}
+  .stat{padding:10px 8px}
+  .stat small{font-size:10px;min-height:24px}
+  .stat strong{font-size:18px}
+  .stat em{font-size:9px}
+  .urdu-invoice{padding:12px 10px}
+  .invoice-head{gap:10px}.invoice-head img{width:74px;height:74px}.invoice-head h2{font-size:28px}.invoice-head p{font-size:13px}
+  .invoice-greeting{font-size:15px}.invoice-party{grid-template-columns:1fr}.invoice-products th,.invoice-products td{font-size:11px;padding:9px 4px}
+  .invoice-summary .invoice-due{font-size:15px}.invoice-stamp{top:86px;left:12px;font-size:16px;padding:7px 10px}
+}
