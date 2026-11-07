@@ -29,3 +29,20 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 
 /* v5: independent entry histories and payment category tabs */
 .history-sections{display:grid;gap:14px;margin-top:14px}.history-sections>.panel{min-width:0}.history-sections .section-title{margin-bottom:12px}.history-sections h3{color:#164e2b;margin:0}.payment-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.payment-tab{border:1px solid #b9d6c0;border-radius:14px;background:#f6faf6;color:#255d37;padding:15px 10px;font-size:14px;font-weight:750;min-height:52px}.payment-tab.active{background:#075b2e;color:white;border-color:#075b2e;box-shadow:0 5px 16px #165b3527}.history-sections .table-wrap,.panel .table-wrap{max-width:100%;overflow-x:auto}@media(max-width:480px){.payment-tab{font-size:12px;padding:11px 6px}.history-sections .panel{padding:12px}}
+
+/* V6: tabbed daily workflow, readable financial trend, compact actions */
+.entry-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0}
+.entry-tab{min-width:0;min-height:58px;border:1px solid #dfebe3;background:#f6fbf7;color:#215c38;border-radius:14px;font-size:13px;font-weight:750;padding:8px;line-height:1.45}
+.entry-tab.active{background:#07552d;color:white;box-shadow:0 5px 15px #0a683728}
+.entry-current{min-width:0}.entry-current .section-title h3{margin:0;color:#07552d}
+.icon-actions{display:inline-flex!important;flex-flow:row nowrap!important;align-items:center;gap:4px;white-space:nowrap}
+.icon-action{min-width:30px;width:32px;height:32px;min-height:32px;padding:2px;border-radius:8px;font-size:17px;line-height:1}
+.back-control{margin-bottom:12px;border:1px solid #d8e8dc;color:#0c5a30;background:#f1f8f3;border-radius:9px;font-size:13px;font-weight:700;padding:8px 12px}
+.monthly-report{overflow:hidden}.month-filter{display:flex;flex-direction:column;gap:4px;color:#3f6a4f;font-size:12px;font-weight:700}.month-filter input{max-width:180px;border:1px solid #c9dece;border-radius:9px;padding:9px;color:#18542f;background:#fff}
+.profit-chart{position:relative;width:100%;margin:12px 0 4px;overflow:hidden;aspect-ratio:960/270;min-height:145px;border:1px solid #dfece2;border-radius:12px;background:linear-gradient(#fff,#f6faf7)}
+.profit-chart svg{width:100%;height:100%;display:block}.profit-touch{position:absolute;inset:0;pointer-events:none}.profit-point{position:absolute;width:3.3%;transform:translateX(-50%);border:0;background:transparent;padding:0;pointer-events:auto;touch-action:manipulation}
+.profit-point:focus-visible{outline:2px dashed #116b39;background:#1d955518}
+.profit-tip{margin:3px 0 18px;font-size:13px;font-weight:700;color:#22613d;min-height:20px}
+.accounting-grid{display:grid;grid-template-columns:1fr;gap:0;border:1px solid #cfe3d3;border-radius:12px;overflow:hidden}.accounting-grid>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-bottom:1px solid #e1eee4;font-size:13px}.accounting-grid b{white-space:nowrap;color:#07552d}.accounting-grid>.accounting-final{background:#e3f4e7;font-size:15px;font-weight:800;border-bottom:0}
+.invoice-payment-box{margin:16px 0;padding:15px;border:1px solid #b6d9c2;background:#f5faf6;border-radius:12px}.invoice-payment-box h3{font-size:15px;color:#07522a;margin:0 0 8px}.invoice-payment-box>div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid #dae9dc;font-size:12px}.invoice-payment-box span{text-align:right}
+@media(max-width:480px){.entry-tabs{gap:5px}.entry-tab{font-size:11px;padding:9px 3px;min-height:58px}.monthly-report{padding:12px}.profit-point{width:4.2%}.invoice-payment-box{padding:9px}.invoice-payment-box>div{flex-direction:column;gap:2px}}
