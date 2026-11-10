@@ -125,3 +125,17 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
  .header-logout span{display:none}
  .header-logout{width:36px;padding:6px}
 }
+
+/* V10: date-range reporting and separate bill categories */
+.dashboard-range-note{font-size:12px;color:#1c613c;background:#edf8f0;border:1px solid #cce4d3;padding:9px 12px;border-radius:11px;margin:0 0 12px}
+.filters{display:flex;flex-wrap:wrap;align-items:end;gap:9px}
+.filters label{font-size:11px;font-weight:700;color:#3c5d47;display:flex;flex-direction:column;gap:4px;min-width:130px;flex:1}
+.filters select,.filters input{width:100%;max-width:none;font-size:13px;padding:8px;min-height:38px;border:1px solid #cbdfd1;border-radius:9px}
+.invoice-products td{overflow-wrap:anywhere;line-height:1.5}
+@media(max-width:480px){.filters label{min-width:calc(50% - 8px)}.payment-tabs{gap:7px}.invoice-party strong{overflow-wrap:anywhere}}
+
+/* V11: show customer address below name in bulk forms and delivery history */
+.bulk-name span,.customer-identity{display:flex;flex-direction:column;min-width:0;gap:3px}
+.bulk-name .customer-address,.customer-identity .customer-address{color:#4a6658;font-size:12px;line-height:1.35;font-weight:500;white-space:normal;overflow-wrap:anywhere}
+.customer-identity strong{font-size:13px;line-height:1.3}
+.bulk-name b{overflow-wrap:anywhere}

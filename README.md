@@ -1,20 +1,30 @@
-# Punjab Dairy V9 — Compact header and navigation update
+# Punjab Dairy V10 — entry amounts, range reports, Urdu supplier bills
 
-This release fixes the crowded mobile header shown in the screenshot. The header now has a one-line shop name, small subtitle and compact logout action. **Back** appears immediately below the navigation tabs on all non-home screens and edit forms, rather than in the red top bar. The existing app logic, Android app ID (`pk.punjabdairy.manager`), IndexedDB database name, data schema and backup logic are unchanged.
+Updated on the existing V9 source. The `pk.punjabdairy.manager` Android application ID, `punjab-dairy-data` IndexedDB database and storage version remain unchanged. **Do not uninstall the existing app**. An Android upgrade must be signed with the same certificate to preserve local data. Export and verify a JSON backup first.
 
-## Upload/build
+## Changes
 
-Unzip this source over your existing project (at the repository root), then run:
+- Fixed the entry edit preview to use historical rates, matching the recalculated history amount and saved record. Editing a delivery keeps existing rate snapshots.
+- The dashboard has Today / This week / This month / Quarter / Year / Custom range filters, with both from/to shown above reporting cards. All-time customer/supplier balances remain labeled all-time.
+- Bills have Customer and Supplier tabs and their own account dropdowns. Admin can choose any from/to period for a customer invoice.
+- Supplier payment receipt: no individual payment-date list, milk totals only, and dated purchase rows showing milk quantity and amount. No yogurt or buffalo separate rows. Bank and Easypaisa remain customer-only.
+- Supplier receipt PDF and PNG exports use the same renderer.
+
+## Build
+
+Unzip over the repository root and run:
 
 ```sh
 git add .
-git commit -m "Punjab Dairy V9 compact mobile navigation"
+git commit -m "Punjab Dairy V10 bills and dashboard range updates"
 git pull --rebase origin main
 git push origin main
 ```
 
-Open GitHub Actions and build the APK. Install **over the existing app only** using the same signing key; do not uninstall or clear app data. If Android reports a signature mismatch, cancel the installation and address signing before proceeding.
+Then build from GitHub Actions. The source has been syntax-checked; it has **not** been compiled or verified on an Android phone.
 
-## Testing
 
-JavaScript was syntax-checked and the source ZIP verified. The Android APK has **not** been compiled or tested on a device in this environment.
+## Version 11 – customer address visibility
+- Bulk home delivery entry rows show each customer's saved address below the name.
+- Home Delivery history grid shows the customer's address below their name.
+- Missing addresses show “Address not set”; no database migration or data modification.
